@@ -1,0 +1,120 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    deployment.kubernetes.io/revision: "25"
+    meta.helm.sh/release-name: prod-content-management-service
+    meta.helm.sh/release-namespace: prod
+  creationTimestamp: "2022-03-10T14:33:34Z"
+  generation: 27
+  labels:
+    app: content-management-service
+    app.kubernetes.io/instance: prod-content-management-service
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: content-management-service
+    helm.sh/chart: content-management-service-2.0.0
+  name: prod-content-management-service
+  namespace: prod
+  resourceVersion: "315852088"
+  uid: a5ab6a1e-0117-4b24-b0af-05b7f3eb3a0b
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: content-management-service
+      app.kubernetes.io/instance: prod-content-management-service
+      app.kubernetes.io/name: content-management-service
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
+        random: GUY26
+      creationTimestamp: null
+      labels:
+        app: content-management-service
+        app.kubernetes.io/instance: prod-content-management-service
+        app.kubernetes.io/name: content-management-service
+    spec:
+      containers:
+      - env:
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /google-creds/mcc-cms-gcp.json
+        - name: GOOGLE_STORAGE_BUCKET
+          value: prod-content-management-service
+        - name: PATH_URL
+          value: sandboxapi.corebankingsoftware.com
+        - name: PORT
+          value: "5000"
+        - name: RABBITMQ_
+          value: rabbit-mq-rabbitmq
+        - name: RABBITMQ_PORT
+          value: "5672"
+        - name: RABBITMQ_USERNAME
+          value: content-management-service
+        - name: RABBITMQ_VHOST
+          value: prod
+        - name: REDIS_HOST
+          value: redis-db-service
+        - name: REDIS_PORT
+          value: "6379"
+        - name: MONGO_URI
+        - name: RABBITMQ_PASSWORD
+          value: Y2QbdzURcuaNwhn2
+        imagePullPolicy: Always
+        livenessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /actuator/health/liveness
+            port: http-port
+            scheme: HTTP
+          initialDelaySeconds: 85
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 10
+        name: content-management-service
+        ports:
+        - containerPort: 5000
+          name: http-port
+          protocol: TCP
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /actuator/health/readiness
+            port: http-port
+            scheme: HTTP
+          initialDelaySeconds: 85
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 10
+        resources:
+          limits:
+            memory: 600Mi
+          requests:
+            cpu: 80m
+            memory: 600Mi
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /work-dir
+          name: share-dir
+        - mountPath: /google-creds/
+          name: mcc-cms-sa-secret
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - emptyDir: {}
+        name: share-dir
+      - name: mcc-cms-sa-secret
+        secret:
+          defaultMode: 420
+          secretName: mcc-cms-sa-secret
